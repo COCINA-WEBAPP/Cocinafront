@@ -6,6 +6,8 @@
  */
 
 import { api } from "@/lib/services/api";
+import { withFallback } from "@/lib/services/fallback";
+import { MOCK_USERS } from "@/lib/data/users";
 import {
   User,
   LoginCredentials,
@@ -142,31 +144,52 @@ export function isAuthenticated(): boolean {
 // ========================================
 
 export async function getAllUsers(): Promise<User[]> {
-  const res = await api.get<{ data: Record<string, unknown>[] } | Record<string, unknown>[]>(
-    "/users?limit=200"
+  return withFallback(
+    "getAllUsers",
+    async () => {
+      const res = await api.get<{ data: Record<string, unknown>[] } | Record<string, unknown>[]>(
+        "/users?limit=200"
+      );
+      const raw = Array.isArray(res) ? res : (res as { data: Record<string, unknown>[] }).data;
+      const users = raw.map(mapApiUser);
+      allUsersCache = users;
+      return users;
+    },
+    () => {
+      allUsersCache = MOCK_USERS;
+      return MOCK_USERS;
+    },
   );
-  const raw = Array.isArray(res) ? res : (res as { data: Record<string, unknown>[] }).data;
-  const users = raw.map(mapApiUser);
-  allUsersCache = users;
-  return users;
 }
 
 export async function getUserById(id: string): Promise<User | undefined> {
-  try {
-    const raw = await api.get<Record<string, unknown>>(`/users/${id}`);
-    return mapApiUser(raw);
-  } catch {
-    return undefined;
-  }
+  return withFallback(
+    "getUserById",
+    async () => {
+      try {
+        const raw = await api.get<Record<string, unknown>>(`/users/${id}`);
+        return mapApiUser(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    () => MOCK_USERS.find((u) => u.id === id),
+  );
 }
 
 export async function getUserByUsername(username: string): Promise<User | undefined> {
-  try {
-    const raw = await api.get<Record<string, unknown>>(`/users/username/${username}`);
-    return mapApiUser(raw);
-  } catch {
-    return undefined;
-  }
+  return withFallback(
+    "getUserByUsername",
+    async () => {
+      try {
+        const raw = await api.get<Record<string, unknown>>(`/users/username/${username}`);
+        return mapApiUser(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    () => MOCK_USERS.find((u) => u.username === username),
+  );
 }
 
 export async function updateUserProfile(

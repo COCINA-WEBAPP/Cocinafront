@@ -6,6 +6,8 @@
  */
 
 import { api } from "@/lib/services/api";
+import { withFallback } from "@/lib/services/fallback";
+import { MOCK_RECIPES } from "@/lib/data/recipes";
 import { Recipe, CreateRecipeData, UpdateRecipeData } from "@/lib/types/recipes";
 import type { RecipeReview } from "@/lib/types/recipe-interactions";
 
@@ -59,41 +61,65 @@ interface PaginatedResponse<T> {
 // ========================================
 
 export async function getAllRecipes(): Promise<Recipe[]> {
-  const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
-    "/recipes?limit=200"
+  return withFallback(
+    "getAllRecipes",
+    async () => {
+      const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
+        "/recipes?limit=200"
+      );
+      const raw = Array.isArray(res)
+        ? res
+        : (res as PaginatedResponse<Record<string, unknown>>).data;
+      return raw.map(mapApiRecipe);
+    },
+    () => MOCK_RECIPES,
   );
-  const raw = Array.isArray(res)
-    ? res
-    : (res as PaginatedResponse<Record<string, unknown>>).data;
-  return raw.map(mapApiRecipe);
 }
 
 export async function getRecipeBySlug(slug: string): Promise<Recipe | undefined> {
-  try {
-    const raw = await api.get<Record<string, unknown>>(`/recipes/${slug}`);
-    return mapApiRecipe(raw);
-  } catch {
-    return undefined;
-  }
+  return withFallback(
+    "getRecipeBySlug",
+    async () => {
+      try {
+        const raw = await api.get<Record<string, unknown>>(`/recipes/${slug}`);
+        return mapApiRecipe(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    () => MOCK_RECIPES.find((r) => r.slug === slug),
+  );
 }
 
 export async function getRecipeById(id: string): Promise<Recipe | undefined> {
-  try {
-    const raw = await api.get<Record<string, unknown>>(`/recipes/id/${id}`);
-    return mapApiRecipe(raw);
-  } catch {
-    return undefined;
-  }
+  return withFallback(
+    "getRecipeById",
+    async () => {
+      try {
+        const raw = await api.get<Record<string, unknown>>(`/recipes/id/${id}`);
+        return mapApiRecipe(raw);
+      } catch {
+        return undefined;
+      }
+    },
+    () => MOCK_RECIPES.find((r) => r.id === id),
+  );
 }
 
 export async function getRecipesByCategory(category: string): Promise<Recipe[]> {
-  const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
-    `/recipes?category=${encodeURIComponent(category)}&limit=200`
+  return withFallback(
+    "getRecipesByCategory",
+    async () => {
+      const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
+        `/recipes?category=${encodeURIComponent(category)}&limit=200`
+      );
+      const raw = Array.isArray(res)
+        ? res
+        : (res as PaginatedResponse<Record<string, unknown>>).data;
+      return raw.map(mapApiRecipe);
+    },
+    () => MOCK_RECIPES.filter((r) => r.category === category),
   );
-  const raw = Array.isArray(res)
-    ? res
-    : (res as PaginatedResponse<Record<string, unknown>>).data;
-  return raw.map(mapApiRecipe);
 }
 
 // ========================================
