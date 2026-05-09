@@ -32,7 +32,10 @@ export function Informacion({ user, onFollowersClick, onFollowingClick }: Inform
           .map((r) => ({ ...r, avgRating: r.rating }));
         setTopRecipes(userRecipes);
       })
-      .catch(() => setTopRecipes([]));
+      .catch((err) => {
+        console.error("[Informacion] error cargando top recetas:", err);
+        setTopRecipes([]);
+      });
   }, [user.username]);
 
   return (

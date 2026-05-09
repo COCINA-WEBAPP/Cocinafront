@@ -148,7 +148,7 @@ export async function getAllUsers(): Promise<User[]> {
     "getAllUsers",
     async () => {
       const res = await api.get<{ data: Record<string, unknown>[] } | Record<string, unknown>[]>(
-        "/users?limit=200"
+        "/users?limit=100"
       );
       const raw = Array.isArray(res) ? res : (res as { data: Record<string, unknown>[] }).data;
       const users = raw.map(mapApiUser);

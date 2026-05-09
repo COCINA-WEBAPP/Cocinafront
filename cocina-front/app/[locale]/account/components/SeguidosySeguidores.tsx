@@ -36,7 +36,8 @@ export function SeguidosySeguidores({
         setFollowingUsers(following);
         setFollowersUsers(followers);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("[SeguidosySeguidores] error cargando seguidores/seguidos:", err);
         setFollowingUsers([]);
         setFollowersUsers([]);
       });

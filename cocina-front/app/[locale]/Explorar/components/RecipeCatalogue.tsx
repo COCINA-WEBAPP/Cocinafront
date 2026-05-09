@@ -41,7 +41,12 @@ export function RecipeCatalogue() {
   const [allRecipes, setAllRecipes] = useState<import("@/lib/types/recipes").Recipe[]>([]);
 
   useEffect(() => {
-    getAllRecipes().then(setAllRecipes).catch(() => setAllRecipes([]));
+    getAllRecipes()
+      .then(setAllRecipes)
+      .catch((err) => {
+        console.error("[RecipeCatalogue] error cargando recetas:", err);
+        setAllRecipes([]);
+      });
   }, []);
 
   const allTags = useMemo(() => {

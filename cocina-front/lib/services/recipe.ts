@@ -65,7 +65,7 @@ export async function getAllRecipes(): Promise<Recipe[]> {
     "getAllRecipes",
     async () => {
       const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
-        "/recipes?limit=200"
+        "/recipes?limit=100"
       );
       const raw = Array.isArray(res)
         ? res
@@ -111,7 +111,7 @@ export async function getRecipesByCategory(category: string): Promise<Recipe[]> 
     "getRecipesByCategory",
     async () => {
       const res = await api.get<PaginatedResponse<Record<string, unknown>> | Record<string, unknown>[]>(
-        `/recipes?category=${encodeURIComponent(category)}&limit=200`
+        `/recipes?category=${encodeURIComponent(category)}&limit=100`
       );
       const raw = Array.isArray(res)
         ? res

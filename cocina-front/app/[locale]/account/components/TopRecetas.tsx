@@ -15,7 +15,12 @@ export function TopRecetas({ user }: TopRecetasProps) {
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
 
   useEffect(() => {
-    getAllRecipes().then(setAllRecipes).catch(() => setAllRecipes([]));
+    getAllRecipes()
+      .then(setAllRecipes)
+      .catch((err) => {
+        console.error("[TopRecetas] error cargando recetas:", err);
+        setAllRecipes([]);
+      });
   }, []);
 
   const topRecipes = useMemo(() => {

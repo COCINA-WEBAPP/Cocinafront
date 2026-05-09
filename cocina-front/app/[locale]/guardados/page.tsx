@@ -24,7 +24,10 @@ export default function GuardadosPage() {
 
 		getAllRecipes()
 			.then((all) => setSavedRecipes(all.filter((r) => user.savedRecipes.includes(r.id))))
-			.catch(() => setSavedRecipes([]));
+			.catch((err) => {
+				console.error("[guardados] error cargando recetas guardadas:", err);
+				setSavedRecipes([]);
+			});
 	}, []);
 
 	const refreshSaved = () => {
@@ -33,7 +36,9 @@ export default function GuardadosPage() {
 		setCurrentUser({ ...user });
 		getAllRecipes()
 			.then((all) => setSavedRecipes(all.filter((r) => user.savedRecipes.includes(r.id))))
-			.catch(() => {});
+			.catch((err) => {
+				console.error("[guardados] error refrescando recetas guardadas:", err);
+			});
 	};
 
 	if (!currentUser) {

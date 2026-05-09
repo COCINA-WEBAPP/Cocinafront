@@ -25,7 +25,10 @@ export function Favoritos({ user: passedUser }: FavoritosProps) {
 
     getAllRecipes()
       .then((all) => setFavoriteRecipes(all.filter((r) => user.savedRecipes.includes(r.id))))
-      .catch(() => setFavoriteRecipes([]));
+      .catch((err) => {
+        console.error("[Favoritos] error cargando favoritos:", err);
+        setFavoriteRecipes([]);
+      });
   }, [passedUser]);
 
   const refreshFavorites = () => {
@@ -34,7 +37,9 @@ export function Favoritos({ user: passedUser }: FavoritosProps) {
     setCurrentUser({ ...user });
     getAllRecipes()
       .then((all) => setFavoriteRecipes(all.filter((r) => user.savedRecipes.includes(r.id))))
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[Favoritos] error refrescando favoritos:", err);
+      });
   };
 
   if (!currentUser) return null;

@@ -24,7 +24,10 @@ export function RecetasCreadas({ user: passedUser }: RecetasCreadasProps) {
     if (!user) return;
     getAllRecipes()
       .then((all) => setCreatedRecipes(all.filter((r) => r.author.username === user.username)))
-      .catch(() => setCreatedRecipes([]));
+      .catch((err) => {
+        console.error("[RecetasCreadas] error cargando recetas creadas:", err);
+        setCreatedRecipes([]);
+      });
   }, [passedUser]);
 
   if (!currentUser) return null;

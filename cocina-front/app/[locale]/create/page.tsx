@@ -229,7 +229,14 @@ export default function CreateRecipePage() {
   useEffect(() => {
     const user = getCurrentUser();
     setIsAuthenticated(!!user);
-    if (user) getUserTags().then((tags) => setUserTags(tags ?? [])).catch(() => setUserTags([]));
+    if (user) {
+      getUserTags()
+        .then((tags) => setUserTags(tags ?? []))
+        .catch((err) => {
+          console.error("[create] error cargando tags del usuario:", err);
+          setUserTags([]);
+        });
+    }
   }, []);
 
   if (isAuthenticated === null) return null;
