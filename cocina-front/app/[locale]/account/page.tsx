@@ -157,7 +157,7 @@ function AccountPageContent() {
           <div className="flex items-center gap-3 mt-4">
             <Button
               onClick={() => setIsEditDialogOpen(true)}
-              className="bg-[#2d6a4f] hover:bg-[#1b4332] text-white rounded-full px-5 text-sm font-semibold"
+              className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5 text-sm font-semibold"
             >
               <Pencil size={14} className="mr-1.5" />
               {t("editProfileBtn")}
