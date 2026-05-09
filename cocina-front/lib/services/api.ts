@@ -51,7 +51,25 @@ class ApiClient {
     // 204 No Content
     if (res.status === 204) return undefined as T;
 
-    return res.json() as Promise<T>;
+    const json = await res.json();
+
+    // El back tiene un TransformInterceptor global que envuelve respuestas no
+    // paginadas en { data: ... }. Las paginadas vienen como { data, meta } y
+    // las dejamos pasar tal cual (los servicios saben leerlas).
+    // Aquí desenvolvemos el sobre cuando aplica, así el resto del cliente ve
+    // la forma "natural" del recurso.
+    if (
+      json &&
+      typeof json === "object" &&
+      !Array.isArray(json) &&
+      "data" in json &&
+      !("meta" in json) &&
+      Object.keys(json).length === 1
+    ) {
+      return (json as { data: T }).data;
+    }
+
+    return json as T;
   }
 
   get<T>(url: string): Promise<T> {
@@ -104,7 +122,20 @@ class ApiClient {
       );
     }
 
-    return res.json();
+    const json = await res.json();
+    // Mismo unwrap que en request(): el TransformInterceptor del back envuelve
+    // las respuestas en { data: ... }.
+    if (
+      json &&
+      typeof json === "object" &&
+      !Array.isArray(json) &&
+      "data" in json &&
+      !("meta" in json) &&
+      Object.keys(json).length === 1
+    ) {
+      return (json as { data: { url: string } }).data;
+    }
+    return json;
   }
 }
 
