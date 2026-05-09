@@ -142,7 +142,7 @@ function AccountPageContent() {
             <div className="relative flex-shrink-0">
               
               <img
-                src={currentUser.avatar || "https://i.pravatar.cc/150?img=3"}
+                src={currentUser.avatar || `https://i.pravatar.cc/150?u=${currentUser.id}`}
                 alt={currentUser.fullName}
                 className="w-16 h-16 rounded-full object-cover border-2 border-gray-100"
               />

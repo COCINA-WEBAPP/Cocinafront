@@ -120,12 +120,12 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
           <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" aria-label={t("userMenu")}>
-                {currentUser?.avatar ? (
+              <Button variant="ghost" size="sm" aria-label={t("userMenu")} className={currentUser ? "p-0 h-9 w-9 rounded-full" : undefined}>
+                {currentUser ? (
                   <img
-                    src={currentUser.avatar}
+                    src={currentUser.avatar || `https://i.pravatar.cc/150?u=${currentUser.id}`}
                     alt={currentUser.fullName}
-                    className="h-5 w-5 rounded-full object-cover"
+                    className="h-9 w-9 rounded-full object-cover ring-2 ring-orange-200"
                   />
                 ) : (
                   <User className="h-5 w-5" />
