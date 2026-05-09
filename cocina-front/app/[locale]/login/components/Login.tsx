@@ -43,7 +43,8 @@ export function LoginForm() {
   };
 
   const fillExample = () => {
-    setFormData({ email: "maria@example.com", password: "cualquiera" });
+    // Credenciales del usuario seed del back (ver CocinaBack/src/seed/seed.data.ts).
+    setFormData({ email: "maria@cocina.com", password: "password123" });
   };
 
   const inputCls =

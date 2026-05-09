@@ -13,13 +13,17 @@ export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElemen
 
   const { src, alt, style, className, ...rest } = props
 
-  return didError ? (
+  // src vacío/undefined cuenta como error: una <img src={undefined}> no dispara onError
+  // y deja un hueco en blanco. Mejor mostrar el placeholder directamente.
+  const hasNoSrc = !src || (typeof src === 'string' && src.trim() === '')
+
+  return didError || hasNoSrc ? (
     <div
-      className={`inline-block bg-gray-100 text-center align-middle ${className ?? ''}`}
+      className={`inline-block bg-gradient-to-br from-orange-50 to-orange-100 text-center align-middle ${className ?? ''}`}
       style={style}
     >
       <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} data-original-url={src} />
+        <img src={ERROR_IMG_SRC} alt={alt ?? 'Sin imagen'} {...rest} data-original-url={src} />
       </div>
     </div>
   ) : (
