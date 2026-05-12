@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   PaymentStatusResponse,
 } from "@/lib/services/payments";
 
-export default function PagoExitoPage() {
+function PagoExitoContent() {
   const params = useSearchParams();
   const ref = params.get("ref") ?? params.get("external_reference");
   const [payment, setPayment] = useState<PaymentStatusResponse | null>(null);
@@ -69,5 +69,13 @@ export default function PagoExitoPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PagoExitoPage() {
+  return (
+    <Suspense fallback={null}>
+      <PagoExitoContent />
+    </Suspense>
   );
 }

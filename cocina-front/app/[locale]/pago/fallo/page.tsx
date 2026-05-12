@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function PagoFalloPage() {
+function PagoFalloContent() {
   const params = useSearchParams();
   const ref = params.get("ref") ?? params.get("external_reference");
 
@@ -36,5 +37,13 @@ export default function PagoFalloPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function PagoFalloPage() {
+  return (
+    <Suspense fallback={null}>
+      <PagoFalloContent />
+    </Suspense>
   );
 }
