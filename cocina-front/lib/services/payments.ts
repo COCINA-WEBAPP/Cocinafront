@@ -75,9 +75,15 @@ export const paymentsService = {
   },
 
   /** Re-consulta MP y activa premium si el pago está aprobado. */
-  async syncByRef(ref: string): Promise<PaymentStatusResponse> {
+  async syncByRef(
+    ref: string,
+    paymentId?: string
+  ): Promise<PaymentStatusResponse> {
+    const qs = paymentId
+      ? `?payment_id=${encodeURIComponent(paymentId)}`
+      : "";
     return api.post<PaymentStatusResponse>(
-      `/payments/sync/${encodeURIComponent(ref)}`,
+      `/payments/sync/${encodeURIComponent(ref)}${qs}`,
       {}
     );
   },

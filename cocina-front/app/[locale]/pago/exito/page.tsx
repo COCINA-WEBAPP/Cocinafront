@@ -14,6 +14,8 @@ import { refreshCurrentUser } from "@/lib/services/user";
 function PagoExitoContent() {
   const params = useSearchParams();
   const ref = params.get("ref") ?? params.get("external_reference");
+  const mpPaymentId =
+    params.get("payment_id") ?? params.get("collection_id") ?? undefined;
   const [payment, setPayment] = useState<PaymentStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +28,7 @@ function PagoExitoContent() {
         // Forzamos un sync contra MP (sirve cuando el webhook aún no llegó,
         // típicamente en local sin túnel HTTPS).
         const p = await paymentsService
-          .syncByRef(ref)
+          .syncByRef(ref, mpPaymentId)
           .catch(() => paymentsService.getByRef(ref));
         if (!active) return;
         setPayment(p);
@@ -47,7 +49,7 @@ function PagoExitoContent() {
     return () => {
       active = false;
     };
-  }, [ref]);
+  }, [ref, mpPaymentId]);
 
   return (
     <div className="container max-w-xl mx-auto py-10 px-4">
