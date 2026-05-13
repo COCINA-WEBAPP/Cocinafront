@@ -4,7 +4,8 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getCurrentUser, logout } from "@/lib/services/user";
+import { getCurrentUser, logout, refreshCurrentUser } from "@/lib/services/user";
+import { PremiumBadge } from "@/components/PremiumBadge";
 import { getAllRecipes, getRecipeReviews } from "@/lib/services/recipe";
 import type { User as AppUser } from "@/lib/types/users";
 import { Informacion } from "./components/Informacion";
@@ -110,6 +111,11 @@ function AccountPageContent() {
 
   useEffect(() => {
     setCurrentUser(getCurrentUser());
+    refreshCurrentUser()
+      .then((fresh) => {
+        if (fresh) setCurrentUser(fresh);
+      })
+      .catch(() => undefined);
   }, []);
 
   const handleLogout = async () => {
@@ -149,12 +155,25 @@ function AccountPageContent() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-gray-900 truncate">{currentUser.fullName}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-lg font-bold text-gray-900 truncate">{currentUser.fullName}</h1>
+                {currentUser.isPremium && <PremiumBadge />}
+              </div>
               <p className="text-sm text-gray-400 truncate">{currentUser.email}</p>
+              {currentUser.isPremium && currentUser.premiumSince && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Premium desde{" "}
+                  {new Date(currentUser.premiumSince).toLocaleDateString("es-CO", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-4">
+          <div className="flex items-center gap-3 mt-4 flex-wrap">
             <Button
               onClick={() => setIsEditDialogOpen(true)}
               className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5 text-sm font-semibold"
@@ -162,6 +181,14 @@ function AccountPageContent() {
               <Pencil size={14} className="mr-1.5" />
               {t("editProfileBtn")}
             </Button>
+            {!currentUser.isPremium && (
+              <Button
+                onClick={() => router.push("/premium")}
+                className="bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white rounded-full px-5 text-sm font-semibold"
+              >
+                Hazte premium
+              </Button>
+            )}
             <Button
               onClick={handleLogout}
               variant="outline"

@@ -12,6 +12,7 @@ import { SeguidosySeguidores } from "../../account/components/SeguidosySeguidore
 import { getCurrentUser, getUserByUsername } from "@/lib/services/user";
 import type { User as AppUser } from "@/lib/types/users";
 import { useTranslations } from "next-intl";
+import { PremiumBadge } from "@/components/PremiumBadge";
 
 export default function PerfilUsuarioPage() {
 	const t = useTranslations("Profile");
@@ -85,8 +86,9 @@ export default function PerfilUsuarioPage() {
 			<div className="max-w-4xl mx-auto">
 				<Card>
 					<CardHeader>
-						<CardTitle className="text-2xl">
-							{t("profileOf", { name: profileUser.fullName })}
+						<CardTitle className="text-2xl flex items-center gap-2 flex-wrap">
+							<span>{t("profileOf", { name: profileUser.fullName })}</span>
+							{profileUser.isPremium && <PremiumBadge />}
 						</CardTitle>
 						<CardDescription>
 							{t("publicInfo")}

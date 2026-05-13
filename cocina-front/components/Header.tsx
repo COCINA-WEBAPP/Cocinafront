@@ -14,9 +14,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { getCurrentUser, logout } from "@/lib/services/user";
+import { getCurrentUser, logout, refreshCurrentUser } from "@/lib/services/user";
 import type { User as AppUser } from "@/lib/types/users";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { PremiumBadge } from "./PremiumBadge";
+import { Crown } from "lucide-react";
 
 interface HeaderProps {
   savedRecipesCount?: number;
@@ -31,6 +33,11 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
 
   useEffect(() => {
     setCurrentUser(getCurrentUser());
+    refreshCurrentUser()
+      .then((fresh) => {
+        if (fresh) setCurrentUser(fresh);
+      })
+      .catch(() => undefined);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -120,13 +127,25 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
           <LanguageSwitcher />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" aria-label={t("userMenu")} className={currentUser ? "p-0 h-9 w-9 rounded-full" : undefined}>
+              <Button variant="ghost" size="sm" aria-label={t("userMenu")} className={currentUser ? "p-0 h-9 w-9 rounded-full relative" : undefined}>
                 {currentUser ? (
-                  <img
-                    src={currentUser.avatar || `https://i.pravatar.cc/150?u=${currentUser.id}`}
-                    alt={currentUser.fullName}
-                    className="h-9 w-9 rounded-full object-cover ring-2 ring-orange-200"
-                  />
+                  <>
+                    <img
+                      src={currentUser.avatar || `https://i.pravatar.cc/150?u=${currentUser.id}`}
+                      alt={currentUser.fullName}
+                      className={`h-9 w-9 rounded-full object-cover ring-2 ${
+                        currentUser.isPremium ? "ring-amber-400" : "ring-orange-200"
+                      }`}
+                    />
+                    {currentUser.isPremium && (
+                      <span
+                        className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 shadow ring-2 ring-background"
+                        aria-label="Premium"
+                      >
+                        <Crown size={9} className="fill-white text-white" />
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <User className="h-5 w-5" />
                 )}
@@ -141,13 +160,27 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
               )}
               {currentUser && (
                 <>
+                  <div className="px-2 py-1.5 text-xs text-muted-foreground border-b mb-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-foreground truncate">
+                        {currentUser.fullName}
+                      </span>
+                      {currentUser.isPremium ? (
+                        <PremiumBadge size="sm" />
+                      ) : (
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                          Gratis
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   <DropdownMenuItem onSelect={() => router.push("/account")}>
                     <UserCircle className="mr-2 h-4 w-4" />
                     {t("myProfile")}
                   </DropdownMenuItem>
                   {!currentUser.isPremium && (
                     <DropdownMenuItem onSelect={() => router.push("/premium")}>
-                      <UserCircle className="mr-2 h-4 w-4" />
+                      <Crown className="mr-2 h-4 w-4 text-amber-500" />
                       Hazte premium
                     </DropdownMenuItem>
                   )}
