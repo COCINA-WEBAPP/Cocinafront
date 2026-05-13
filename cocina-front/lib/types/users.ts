@@ -21,6 +21,8 @@ export type User = {
   bio?: string;
   createdAt: string;
   role: "user" | "admin";
+  isPremium?: boolean;
+  premiumSince?: string;
 
   // ===== Estadísticas del Usuario =====
   stats: {

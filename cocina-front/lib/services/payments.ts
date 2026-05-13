@@ -42,6 +42,13 @@ export interface PaymentStatusResponse {
   preferenceId?: string;
 }
 
+export interface PremiumConfig {
+  price: number;
+  currency: string;
+  title: string;
+  description: string;
+}
+
 export const paymentsService = {
   async createPreference(
     payload: CreatePreferencePayload
@@ -59,11 +66,37 @@ export const paymentsService = {
     return api.get<PaymentStatusResponse>(`/payments/${id}`);
   },
 
+  async getPremiumConfig(): Promise<PremiumConfig> {
+    return api.get<PremiumConfig>("/payments/premium/config");
+  },
+
+  async createPremiumPreference(): Promise<PreferenceResponse> {
+    return api.post<PreferenceResponse>("/payments/premium/checkout", {});
+  },
+
+  /** Re-consulta MP y activa premium si el pago está aprobado. */
+  async syncByRef(ref: string): Promise<PaymentStatusResponse> {
+    return api.post<PaymentStatusResponse>(
+      `/payments/sync/${encodeURIComponent(ref)}`,
+      {}
+    );
+  },
+
   /** Crea la preferencia y redirige al Checkout Pro de MercadoPago. */
   async checkout(payload: CreatePreferencePayload): Promise<void> {
     const pref = await this.createPreference(payload);
-    const isProd = !pref.initPoint?.includes("sandbox");
-    window.location.href =
-      (isProd ? pref.initPoint : pref.sandboxInitPoint) ?? pref.initPoint;
+    redirectToCheckout(pref);
+  },
+
+  /** Atajo: inicia el checkout del acceso premium. */
+  async checkoutPremium(): Promise<void> {
+    const pref = await this.createPremiumPreference();
+    redirectToCheckout(pref);
   },
 };
+
+function redirectToCheckout(pref: PreferenceResponse): void {
+  const isProd = !pref.initPoint?.includes("sandbox");
+  window.location.href =
+    (isProd ? pref.initPoint : pref.sandboxInitPoint) ?? pref.initPoint;
+}

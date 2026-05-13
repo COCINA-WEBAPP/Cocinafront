@@ -145,6 +145,12 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
                     <UserCircle className="mr-2 h-4 w-4" />
                     {t("myProfile")}
                   </DropdownMenuItem>
+                  {!currentUser.isPremium && (
+                    <DropdownMenuItem onSelect={() => router.push("/premium")}>
+                      <UserCircle className="mr-2 h-4 w-4" />
+                      Hazte premium
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onSelect={async () => {

@@ -49,6 +49,8 @@ function mapApiUser(raw: Record<string, unknown>): User {
     bio: raw.bio as string | undefined,
     createdAt: (raw.createdAt as string) || new Date().toISOString(),
     role: (raw.role as "user" | "admin") || "user",
+    isPremium: Boolean(raw.isPremium),
+    premiumSince: raw.premiumSince as string | undefined,
     stats: (raw.stats as User["stats"]) || {
       recipesCount: 0,
       followersCount: 0,

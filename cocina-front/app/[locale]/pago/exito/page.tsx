@@ -9,6 +9,7 @@ import {
   paymentsService,
   PaymentStatusResponse,
 } from "@/lib/services/payments";
+import { refreshCurrentUser } from "@/lib/services/user";
 
 function PagoExitoContent() {
   const params = useSearchParams();
@@ -22,10 +23,19 @@ function PagoExitoContent() {
     let active = true;
     const poll = async () => {
       try {
-        const p = await paymentsService.getByRef(ref);
+        // Forzamos un sync contra MP (sirve cuando el webhook aún no llegó,
+        // típicamente en local sin túnel HTTPS).
+        const p = await paymentsService
+          .syncByRef(ref)
+          .catch(() => paymentsService.getByRef(ref));
         if (!active) return;
         setPayment(p);
-        if (p.status === "approved" || attempts > 8) return;
+        if (p.status === "approved") {
+          // Refresca el usuario para reflejar isPremium=true en caché.
+          refreshCurrentUser().catch(() => undefined);
+          return;
+        }
+        if (attempts > 8) return;
         attempts++;
         setTimeout(poll, 1500);
       } catch (e) {
