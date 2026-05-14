@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/sonner";
 import { ChefBot } from "@/components/ChefBot";
+import { AdBanner, AdPopup } from "@/components/Ads";
 import { Analytics } from "@vercel/analytics/next";
 import "@/styles/globals.css";
 
@@ -65,6 +66,8 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider>
           {children}
           <ChefBot />
+          <AdBanner />
+          <AdPopup />
           <Toaster />
         </NextIntlClientProvider>
         <Analytics />

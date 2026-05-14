@@ -5,8 +5,11 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import { MessageCircle, X, Send, ChefHat, Bot } from "lucide-react";
+import { MessageCircle, X, Send, ChefHat, Bot, Crown, Lock } from "lucide-react";
 import { getChefBotResponse } from "./chefBotResponses";
+import { getCurrentUser } from "@/lib/services/user";
+import { useRouter } from "@/i18n/navigation";
+import type { User } from "@/lib/types/users";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -23,7 +26,6 @@ function formatTime(date: Date) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-/** Convierte markdown básico (**bold** y *italic*) a JSX inline */
 function renderMarkdown(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
   return parts.map((part, i) => {
@@ -54,17 +56,92 @@ function renderMessageContent(content: string) {
   ));
 }
 
-// ─── Componente ───────────────────────────────────────────────────────────────
+// ─── Gate Premium ─────────────────────────────────────────────────────────────
+
+function PremiumGate({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  return (
+    <section
+      role="dialog"
+      aria-label="ChefBot Premium"
+      className={cn(
+        "fixed z-50 flex flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl",
+        "bottom-24 right-4 w-[calc(100vw-2rem)] max-w-sm",
+        "md:bottom-24 md:right-6 md:w-96 md:max-w-none",
+      )}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 bg-citrus-accent px-4 py-3">
+        <Avatar className="h-10 w-10 border-2 border-white/30">
+          <AvatarFallback className="bg-white/20 text-white">
+            <ChefHat className="h-5 w-5" />
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <h3 className="font-semibold leading-tight text-white">ChefBot</h3>
+          <p className="text-xs text-white/70">Asistente de cocina</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-white hover:bg-white/20 hover:text-white"
+          onClick={onClose}
+          aria-label="Cerrar"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Gate body */}
+      <div className="flex flex-col items-center gap-4 px-6 py-8 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+          <Lock className="h-8 w-8 text-amber-500" />
+        </div>
+
+        <div>
+          <h4 className="text-lg font-bold">ChefBot es exclusivo Premium</h4>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Accede a tu asistente culinario inteligente con una suscripción
+            Premium. Responde sustituciones, técnicas, conversiones y mucho más.
+          </p>
+        </div>
+
+        <ul className="w-full space-y-2 text-left text-sm">
+          {[
+            "🍳 Sustitución de ingredientes al instante",
+            "📐 Conversión de medidas y porciones",
+            "🔪 Explicación de técnicas culinarias",
+            "🚫 Sin publicidad en toda la app",
+          ].map((feat) => (
+            <li key={feat} className="flex items-start gap-2 text-muted-foreground">
+              <span>{feat}</span>
+            </li>
+          ))}
+        </ul>
+
+        <Button
+          className="w-full gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-md"
+          onClick={() => {
+            onClose();
+            router.push("/premium");
+          }}
+        >
+          <Crown className="h-4 w-4" />
+          Hazte Premium
+        </Button>
+
+        <p className="text-xs text-muted-foreground">
+          Una sola vez · Sin suscripción mensual
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ─── Componente Principal ──────────────────────────────────────────────────────
 
 export function ChefBot() {
   const t = useTranslations("ChefBot");
-
-  const WELCOME_MESSAGE: ChatMessage = {
-    id: "welcome",
-    role: "bot",
-    content: t("welcomeMessage"),
-    timestamp: new Date(),
-  };
 
   const SUGGESTION_CHIPS = [
     t("chip1"),
@@ -74,6 +151,7 @@ export function ChefBot() {
   ];
 
   const [isOpen, setIsOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [{
     id: "welcome",
     role: "bot",
@@ -87,61 +165,69 @@ export function ChefBot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Auto-scroll al último mensaje
+  useEffect(() => {
+    setCurrentUser(getCurrentUser());
+  }, []);
+
+  const isPremium = Boolean(currentUser?.isPremium);
+
+  // Auto-scroll
   useEffect(() => {
     const el = scrollRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages, isTyping]);
 
-  // Focus input al abrir
+  // Focus input
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isPremium) {
       setTimeout(() => inputRef.current?.focus(), 200);
     }
-  }, [isOpen]);
+  }, [isOpen, isPremium]);
 
-  const sendMessage = useCallback(
-    (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) return;
+  const sendMessage = useCallback((text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
-      const userMsg: ChatMessage = {
-        id: `user-${Date.now()}`,
-        role: "user",
-        content: trimmed,
+    const userMsg: ChatMessage = {
+      id: `user-${Date.now()}`,
+      role: "user",
+      content: trimmed,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const responseText = getChefBotResponse(trimmed);
+      const botMsg: ChatMessage = {
+        id: `bot-${Date.now()}`,
+        role: "bot",
+        content: responseText,
         timestamp: new Date(),
       };
-
-      setMessages((prev) => [...prev, userMsg]);
-      setInput("");
-      setIsTyping(true);
-
-      // Simular delay de "pensando" para que se sienta conversacional
-      setTimeout(() => {
-        const responseText = getChefBotResponse(trimmed);
-        const botMsg: ChatMessage = {
-          id: `bot-${Date.now()}`,
-          role: "bot",
-          content: responseText,
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev, botMsg]);
-        setIsTyping(false);
-      }, 800 + Math.random() * 600);
-    },
-    []
-  );
+      setMessages((prev) => [...prev, botMsg]);
+      setIsTyping(false);
+    }, 800 + Math.random() * 600);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
   };
 
-  const handleChipClick = (chip: string) => {
-    sendMessage(chip);
-  };
+  // Show premium gate for non-premium users
+  if (isOpen && !isPremium) {
+    return (
+      <>
+        <PremiumGate onClose={() => {
+          setIsOpen(false);
+          setTimeout(() => openButtonRef.current?.focus(), 100);
+        }} />
+      </>
+    );
+  }
 
   return (
     <>
@@ -172,6 +258,11 @@ export function ChefBot() {
                 {t("assistantTitle")}
               </p>
             </div>
+            {/* Premium badge en el header */}
+            <span className="flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold text-white">
+              <Crown className="h-3 w-3 fill-amber-300 text-amber-300" />
+              Premium
+            </span>
             <Button
               variant="ghost"
               size="icon"
@@ -197,7 +288,6 @@ export function ChefBot() {
                     msg.role === "user" ? "flex-row-reverse" : "flex-row"
                   )}
                 >
-                  {/* Avatar (solo bot) */}
                   {msg.role === "bot" && (
                     <Avatar className="mt-1 h-7 w-7 flex-shrink-0">
                       <AvatarFallback className="bg-citrus-accent/10 text-citrus-accent">
@@ -206,7 +296,6 @@ export function ChefBot() {
                     </Avatar>
                   )}
 
-                  {/* Burbuja */}
                   <div
                     className={cn(
                       "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
@@ -253,13 +342,12 @@ export function ChefBot() {
                 {isTyping ? t("typing") : ""}
               </span>
 
-              {/* Chips sugeridos (solo cuando hay 1 mensaje = bienvenida) */}
               {messages.length === 1 && !isTyping && (
                 <div className="flex flex-wrap gap-2 pt-2">
                   {SUGGESTION_CHIPS.map((chip) => (
                     <button
                       key={chip}
-                      onClick={() => handleChipClick(chip)}
+                      onClick={() => sendMessage(chip)}
                       className="rounded-full border border-citrus-accent/30 bg-citrus-accent/5 px-3 py-1.5 text-xs font-medium text-citrus-accent transition-colors hover:bg-citrus-accent/10"
                     >
                       {chip}
@@ -298,7 +386,7 @@ export function ChefBot() {
         </section>
       )}
 
-      {/* ── Botón Flotante (oculto cuando el chat está abierto) ──────── */}
+      {/* ── Botón Flotante ──────────────────────────────────────────────── */}
       {!isOpen && (
         <button
           ref={openButtonRef}
@@ -306,18 +394,29 @@ export function ChefBot() {
           className={cn(
             "fixed z-50 flex items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-105 active:scale-95",
             "h-14 w-14 bottom-6 right-4 md:bottom-6 md:right-6",
-            // En móvil subir para no tapar MobileBottomNav (h-16 + gap)
             "max-md:bottom-[5.5rem]",
-            "bg-citrus-accent text-white"
+            isPremium
+              ? "bg-citrus-accent text-white"
+              : "bg-citrus-accent text-white"
           )}
           aria-label={t("openChat")}
         >
           <Bot className="h-6 w-6" />
-          {/* Pulso indicador */}
-          <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-green-500" />
-          </span>
+
+          {/* Premium lock overlay para no premium */}
+          {!isPremium && (
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 shadow ring-2 ring-background">
+              <Crown className="h-2.5 w-2.5 fill-white text-white" />
+            </span>
+          )}
+
+          {/* Pulso verde solo para premium */}
+          {isPremium && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-3.5 w-3.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-3.5 w-3.5 rounded-full bg-green-500" />
+            </span>
+          )}
         </button>
       )}
     </>
