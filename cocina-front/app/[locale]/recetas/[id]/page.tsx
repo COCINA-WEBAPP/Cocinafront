@@ -60,22 +60,36 @@ export default function RecipePage() {
     let cancelled = false;
     const load = async () => {
       setIsLoading(true);
-      const [found, fetchedReviews, shoppingList, tags] = await Promise.all([
-        getRecipeById(recipeId),
-        getRecipeReviews(recipeId),
-        getShoppingList(),
-        getUserTags(),
-      ]);
+      let found: Recipe | undefined;
+      let fetchedReviews: Recipe["reviews"] = [];
+      try {
+        [found, fetchedReviews] = await Promise.all([
+          getRecipeById(recipeId),
+          getRecipeReviews(recipeId).catch(() => [] as Recipe["reviews"]),
+        ]);
+      } catch {
+        found = undefined;
+      }
       if (cancelled) return;
       setRecipe(found);
       setReviews(fetchedReviews);
-      setInShoppingList(shoppingList.entries.some((e) => e.recipeId === recipeId));
       setIsSaved(isRecipeSaved(recipeId));
-      if (found) {
-        setRecipeTags([...found.tags]);
-        setAvailableTags(tags.filter((tag) => !found.tags.includes(tag)));
-      }
+      if (found) setRecipeTags([...found.tags]);
       setIsLoading(false);
+
+      if (getCurrentUser()) {
+        const [shoppingList, tags] = await Promise.all([
+          getShoppingList().catch(() => null),
+          getUserTags().catch(() => [] as string[]),
+        ]);
+        if (cancelled) return;
+        if (shoppingList) {
+          setInShoppingList(shoppingList.entries.some((e) => e.recipeId === recipeId));
+        }
+        if (found) {
+          setAvailableTags(tags.filter((tag) => !found!.tags.includes(tag)));
+        }
+      }
     };
     load();
     return () => { cancelled = true; };
