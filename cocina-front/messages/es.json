@@ -254,7 +254,8 @@
     "publishReview": "Publicar reseña",
     "selectRating": "Selecciona una calificación",
     "writeCommentError": "Escribe un comentario",
-    "reviewSent": "Reseña enviada"
+    "reviewSent": "Reseña enviada",
+    "loginRequired": "Inicia sesión para publicar una reseña"
   },
   "Comments": {
     "writeComment": "Escribe un comentario",
@@ -271,7 +272,8 @@
     "commentPublished": "Comentario publicado",
     "replyPublished": "Respuesta publicada",
     "like": "Me gusta",
-    "dislike": "No me gusta"
+    "dislike": "No me gusta",
+    "loginRequired": "Inicia sesión para participar en los comentarios"
   },
   "Account": {
     "notLoggedIn": "No has iniciado sesión",

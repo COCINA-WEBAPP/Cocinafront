@@ -254,7 +254,8 @@
     "publishReview": "Publier l'avis",
     "selectRating": "Sélectionnez une note",
     "writeCommentError": "Écrivez un commentaire",
-    "reviewSent": "Avis envoyé"
+    "reviewSent": "Avis envoyé",
+    "loginRequired": "Connectez-vous pour publier un avis"
   },
   "Comments": {
     "writeComment": "Écrire un commentaire",
@@ -271,7 +272,8 @@
     "commentPublished": "Commentaire publié",
     "replyPublished": "Réponse publiée",
     "like": "J'aime",
-    "dislike": "Je n'aime pas"
+    "dislike": "Je n'aime pas",
+    "loginRequired": "Connectez-vous pour participer aux commentaires"
   },
   "Account": {
     "notLoggedIn": "Vous n'êtes pas connecté",

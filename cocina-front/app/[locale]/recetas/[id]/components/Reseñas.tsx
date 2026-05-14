@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Star } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +25,7 @@ type ReseñasProps = {
 
 export function Reseñas({ recipeId, initialReviews, onChange }: ReseñasProps) {
   const t = useTranslations("Reviews");
+  const router = useRouter();
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
 
@@ -35,10 +37,14 @@ export function Reseñas({ recipeId, initialReviews, onChange }: ReseñasProps) 
   }, [initialReviews, reviewCount]);
 
   const handleSubmit = async () => {
+    const sessionUser = getCurrentUser();
+    if (!sessionUser) {
+      toast.error(t("loginRequired"));
+      router.push("/login");
+      return;
+    }
     if (rating < 1) { toast.error(t("selectRating")); return; }
     if (!comment.trim()) { toast.error(t("writeCommentError")); return; }
-
-    const sessionUser = getCurrentUser();
     const newReview: Review = {
       user: sessionUser
         ? { username: sessionUser.username, fullName: sessionUser.fullName }

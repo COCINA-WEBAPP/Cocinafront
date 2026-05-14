@@ -3,6 +3,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import type { Recipe } from "@/lib/types/recipes";
 import { getCurrentUser } from "@/lib/services/user";
@@ -19,10 +20,18 @@ interface CommentsProps {
 
 export const Comments: React.FC<CommentsProps> = ({ initialComments = [], onChange }) => {
   const t = useTranslations("Comments");
+  const router = useRouter();
   const [comments, setComments] = useState<Comment[]>(() => initialComments);
   const [newCommentText, setNewCommentText] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
+
+  const requireLogin = () => {
+    if (getCurrentUser()) return true;
+    toast.error(t("loginRequired"));
+    router.push("/login");
+    return false;
+  };
 
   const notifyChange = (next: Comment[]) => {
     setComments(next);
@@ -30,6 +39,7 @@ export const Comments: React.FC<CommentsProps> = ({ initialComments = [], onChan
   };
 
   const addComment = () => {
+    if (!requireLogin()) return;
     const text = newCommentText.trim();
     if (!text) return toast.error(t("emptyCommentError"));
     const sessionUser = getCurrentUser();
@@ -61,11 +71,13 @@ export const Comments: React.FC<CommentsProps> = ({ initialComments = [], onChan
   };
 
   const startReply = (index: number) => {
+    if (!requireLogin()) return;
     setReplyingTo(index);
     setReplyText("");
   };
 
   const submitReply = (index: number) => {
+    if (!requireLogin()) return;
     const text = replyText.trim();
     if (!text) return toast.error(t("emptyReplyError"));
     const sessionUser = getCurrentUser();

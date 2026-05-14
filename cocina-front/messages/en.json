@@ -254,7 +254,8 @@
     "publishReview": "Publish review",
     "selectRating": "Select a rating",
     "writeCommentError": "Write a comment",
-    "reviewSent": "Review submitted"
+    "reviewSent": "Review submitted",
+    "loginRequired": "Log in to publish a review"
   },
   "Comments": {
     "writeComment": "Write a comment",
@@ -271,7 +272,8 @@
     "commentPublished": "Comment published",
     "replyPublished": "Reply published",
     "like": "Like",
-    "dislike": "Dislike"
+    "dislike": "Dislike",
+    "loginRequired": "Log in to take part in the comments"
   },
   "Account": {
     "notLoggedIn": "You are not logged in",
