@@ -20,7 +20,6 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe, onFavoriteChange }: RecipeCardProps) {
   const t = useTranslations("RecipeCard");
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const avgRating = recipe.rating;
   const reviewCount = recipe.reviews?.length ?? 0;
@@ -61,8 +60,6 @@ export function RecipeCard({ recipe, onFavoriteChange }: RecipeCardProps) {
   return (
     <motion.div
       className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all duration-300 hover:shadow-xl"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02 }}
@@ -91,17 +88,13 @@ export function RecipeCard({ recipe, onFavoriteChange }: RecipeCardProps) {
           alt={recipe.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
         />
-        <motion.div
-          className="absolute inset-0 bg-black/40 flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
+        <div
+          className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100"
         >
-          <Button asChild variant="secondary"
-            className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button asChild variant="secondary">
             <Link href={`/recetas/${recipe.id}`}>{t("viewRecipe")}</Link>
           </Button>
-        </motion.div>
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">

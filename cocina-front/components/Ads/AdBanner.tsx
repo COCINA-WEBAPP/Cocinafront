@@ -45,29 +45,29 @@ export function AdBanner() {
 
   return (
     <div
-      className={`fixed bottom-16 md:bottom-0 left-0 right-0 z-40 transition-all duration-300 ${
-        fadeIn ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
+      className={`fixed z-40 transition-all duration-300 right-4 md:right-6 bottom-24 max-md:bottom-[10.5rem] w-[min(20rem,calc(100vw-2rem))] ${
+        fadeIn ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
       }`}
       role="complementary"
       aria-label="Publicidad"
     >
       {/* Publicidad label */}
-      <div className="flex justify-center">
+      <div className="flex justify-start pl-3">
         <span className="bg-muted/90 text-muted-foreground text-[10px] px-2 py-0.5 rounded-t-md tracking-widest uppercase">
           Publicidad
         </span>
       </div>
 
-      {/* Banner body */}
+      {/* Bubble body */}
       <div
-        className="w-full border-t border-border shadow-lg"
+        className="w-full rounded-2xl rounded-tl-none border border-border/40 shadow-xl overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${sponsor.bgFrom}, ${sponsor.bgTo})`,
         }}
       >
-        <div className="container mx-auto px-4 py-2.5 flex items-center gap-3 max-w-4xl">
+        <div className="px-3 py-2.5 flex items-center gap-3">
           {/* Logo / emoji */}
-          <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-xl shadow-inner">
+          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center text-lg shadow-inner">
             {sponsor.logoEmoji}
           </div>
 
@@ -80,46 +80,43 @@ export function AdBanner() {
               {sponsor.name}
             </p>
             <p
-              className="text-xs leading-tight line-clamp-1 opacity-90"
+              className="text-[11px] leading-tight line-clamp-2 opacity-90"
               style={{ color: sponsor.textColor }}
             >
               {sponsor.tagline}
             </p>
           </div>
 
-          {/* CTA */}
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <a
-              href={sponsor.ctaUrl}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold bg-white/90 hover:bg-white transition-colors shadow-sm"
-              style={{ color: sponsor.bgFrom }}
-            >
-              {sponsor.ctaLabel}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-
-            <button
-              onClick={dismiss}
-              className="h-7 w-7 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-              style={{ color: sponsor.textColor }}
-              aria-label="Cerrar anuncio"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          </div>
+          {/* Close */}
+          <button
+            onClick={dismiss}
+            className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors"
+            style={{ color: sponsor.textColor }}
+            aria-label="Cerrar anuncio"
+          >
+            <X className="h-3 w-3" />
+          </button>
         </div>
 
-        {/* Premium upsell strip */}
-        <div className="bg-black/10 py-1 text-center">
+        {/* CTA + premium upsell row */}
+        <div className="bg-black/10 px-3 py-1.5 flex items-center justify-between gap-2">
           <button
             onClick={() => router.push("/premium")}
-            className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity"
+            className="text-[10px] underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity truncate"
             style={{ color: sponsor.textColor }}
           >
-            ¿Cansado de los anuncios? Hazte Premium y elimínalos →
+            Quitar anuncios →
           </button>
+          <a
+            href={sponsor.ctaUrl}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="flex-shrink-0 flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold bg-white/90 hover:bg-white transition-colors shadow-sm"
+            style={{ color: sponsor.bgFrom }}
+          >
+            {sponsor.ctaLabel}
+            <ExternalLink className="h-2.5 w-2.5" />
+          </a>
         </div>
       </div>
     </div>
