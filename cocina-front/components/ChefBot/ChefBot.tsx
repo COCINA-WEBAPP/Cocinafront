@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { MessageCircle, X, Send, ChefHat, Bot, Crown, Lock } from "lucide-react";
 import { sendChefBotMessage } from "@/lib/services/chefbot";
 import { getCurrentUser } from "@/lib/services/user";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import type { User } from "@/lib/types/users";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -165,6 +165,12 @@ export function ChefBot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const openButtonRef = useRef<HTMLButtonElement>(null);
 
+  const pathname = usePathname();
+  const recipeIdFromPath = (() => {
+    const match = pathname.match(/\/recetas\/([^/?#]+)/);
+    return match ? match[1] : undefined;
+  })();
+
   useEffect(() => {
     setCurrentUser(getCurrentUser());
   }, []);
@@ -207,7 +213,7 @@ export function ChefBot() {
           role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
           content: m.content,
         }));
-      const reply = await sendChefBotMessage(apiMessages);
+      const reply = await sendChefBotMessage(apiMessages, recipeIdFromPath);
       setMessages((prev) => [
         ...prev,
         {
@@ -233,7 +239,7 @@ export function ChefBot() {
     } finally {
       setIsTyping(false);
     }
-  }, [messages]);
+  }, [messages, recipeIdFromPath]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
