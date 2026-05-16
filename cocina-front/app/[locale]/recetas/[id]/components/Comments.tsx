@@ -120,19 +120,8 @@ export const Comments: React.FC<CommentsProps> = ({ initialComments = [], onChan
 
       {comments.length === 0 ? (
         <div className="rounded-lg border p-6 text-center">
-          <p className="mb-3 text-muted-foreground">{t("noComments")}</p>
-          <p className="mb-4 text-sm">{t("beFirst")}</p>
-          <div className="flex justify-center">
-            <button
-              onClick={() => {
-                const el = document.querySelector<HTMLTextAreaElement>("textarea");
-                el?.focus();
-              }}
-              className="rounded-md bg-primary px-4 py-2 text-primary-foreground text-sm"
-            >
-              {t("writeCommentBtn")}
-            </button>
-          </div>
+          <p className="mb-2 text-muted-foreground">{t("noComments")}</p>
+          <p className="text-sm">{t("beFirst")}</p>
         </div>
       ) : (
         <div className="space-y-4">
