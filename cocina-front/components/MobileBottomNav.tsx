@@ -14,16 +14,15 @@
  * Rutas de navegación:
  * - Inicio    → /           (icono: Home)
  * - Explorar  → /Explorar   (icono: Search)
- * - Guardados → /guardados  (icono: BookMarked)
  * - Perfil    → /account    (icono: User)
  */
 "use client";
 
-import { Home, Search, BookMarked, User, Globe, PlusCircle, ShoppingCart } from "lucide-react";
+import { Home, Search, User, Globe, PlusCircle, ShoppingCart } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useState } from "react";
-import { getCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, refreshCurrentUser } from "@/lib/services/user";
 import type { User as AppUser } from "@/lib/types/users";
 import { routing } from "@/i18n/routing";
 import {
@@ -53,7 +52,6 @@ const NAV_ITEMS = [
   { href: "/", icon: Home, labelKey: "home", authOnly: false },
   { href: "/Explorar", icon: Search, labelKey: "explore", authOnly: false },
   { href: "/create", icon: PlusCircle, labelKey: "create", authOnly: true },
-  { href: "/guardados", icon: BookMarked, labelKey: "saved", authOnly: false },
   { href: "/lista-compras", icon: ShoppingCart, labelKey: "shoppingList", authOnly: false },
   { href: "/account", icon: User, labelKey: "profile", authOnly: false },
 ] as const;
@@ -71,6 +69,11 @@ export function MobileBottomNav() {
 
   useEffect(() => {
     setCurrentUser(getCurrentUser());
+    refreshCurrentUser()
+      .then((fresh) => {
+        if (fresh) setCurrentUser(fresh);
+      })
+      .catch(() => undefined);
   }, []);
 
   return (
@@ -95,7 +98,8 @@ export function MobileBottomNav() {
               ? pathname === "/"
               : pathname.startsWith(href);
 
-          const showAvatar = href === "/account" && currentUser?.avatar;
+          const showAvatar = href === "/account" && currentUser;
+          const avatarSrc = currentUser?.avatar || (currentUser ? `https://i.pravatar.cc/150?u=${currentUser.id}` : "");
 
           return (
             <Link
@@ -110,7 +114,7 @@ export function MobileBottomNav() {
             >
               {showAvatar ? (
                 <img
-                  src={currentUser.avatar}
+                  src={avatarSrc}
                   alt={currentUser.fullName}
                   className={`h-6 w-6 rounded-full object-cover ${isActive ? "ring-2 ring-primary" : ""}`}
                 />

@@ -1,9 +1,8 @@
 "use client";
 
-import { Search, BookMarked, User, Menu, ChefHat, LogOut, UserCircle, Plus, ShoppingCart } from "lucide-react";
+import { Search, User, Menu, ChefHat, LogOut, UserCircle, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Badge } from "./ui/badge";
 import { useEffect, useState } from "react";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -21,11 +20,10 @@ import { PremiumBadge } from "./PremiumBadge";
 import { Crown } from "lucide-react";
 
 interface HeaderProps {
-  savedRecipesCount?: number;
   onMenuToggle?: () => void;
 }
 
-export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
+export function Header({ onMenuToggle }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const router = useRouter();
@@ -43,15 +41,6 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     router.push(`/Explorar?search=${encodeURIComponent(searchQuery)}`);
-  };
-
-  const handleSavedClick = () => {
-    const user = getCurrentUser();
-    if (!user) {
-      router.push("/login?tab=login");
-      return;
-    }
-    router.push("/guardados");
   };
 
   return (
@@ -99,17 +88,6 @@ export function Header({ savedRecipesCount = 0, onMenuToggle }: HeaderProps) {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="sm:hidden" aria-label={t("search")}>
             <Search className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="relative" onClick={handleSavedClick} aria-label={t("savedRecipes")}>
-            <BookMarked className="h-5 w-5" />
-            {savedRecipesCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-              >
-                {savedRecipesCount}
-              </Badge>
-            )}
           </Button>
           <Link href="/lista-compras">
             <Button variant="ghost" size="sm" aria-label={t("shoppingList")}>
