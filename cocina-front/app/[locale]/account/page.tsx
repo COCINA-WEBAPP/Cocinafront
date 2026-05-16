@@ -1,7 +1,6 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getCurrentUser, logout, refreshCurrentUser } from "@/lib/services/user";
@@ -110,13 +109,18 @@ function AccountPageContent() {
   const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
 
   useEffect(() => {
-    setCurrentUser(getCurrentUser());
+    const local = getCurrentUser();
+    setCurrentUser(local);
+    if (!local) {
+      router.replace("/login");
+      return;
+    }
     refreshCurrentUser()
       .then((fresh) => {
         if (fresh) setCurrentUser(fresh);
       })
       .catch(() => undefined);
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     await logout();
@@ -124,19 +128,7 @@ function AccountPageContent() {
   };
 
   if (!currentUser) {
-    return (
-      <div className="container mx-auto px-4 py-16 flex items-center justify-center">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-8 pb-6 space-y-4">
-            <p className="text-lg font-semibold text-gray-800">{t("notLoggedIn")}</p>
-            <p className="text-sm text-gray-500">{t("loginRequired")}</p>
-            <Button onClick={() => router.push("/login")} className="bg-[#2d6a4f] hover:bg-[#1b4332] text-white">
-              {t("goToLogin")}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   return (

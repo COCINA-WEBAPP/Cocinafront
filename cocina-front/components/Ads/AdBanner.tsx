@@ -8,6 +8,7 @@ import { useRouter } from "@/i18n/navigation";
 
 const BANNER_DISMISSED_KEY = "ad_banner_dismissed_until";
 const ROTATE_INTERVAL_MS = 30_000;
+const DISMISS_DURATION_MS = 5 * 60 * 1000;
 
 export function AdBanner() {
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
@@ -37,8 +38,7 @@ export function AdBanner() {
   const dismiss = useCallback(() => {
     setFadeIn(false);
     setTimeout(() => setVisible(false), 300);
-    // Don't show again for this session
-    sessionStorage.setItem(BANNER_DISMISSED_KEY, String(Date.now() + 60 * 60 * 1000));
+    sessionStorage.setItem(BANNER_DISMISSED_KEY, String(Date.now() + DISMISS_DURATION_MS));
   }, []);
 
   if (!visible || !sponsor) return null;
