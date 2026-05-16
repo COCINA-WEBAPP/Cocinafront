@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { MessageCircle, X, Send, ChefHat, Bot, Crown, Lock } from "lucide-react";
-import { getChefBotResponse } from "./chefBotResponses";
+import { sendChefBotMessage } from "@/lib/services/chefbot";
 import { getCurrentUser } from "@/lib/services/user";
 import { useRouter } from "@/i18n/navigation";
 import type { User } from "@/lib/types/users";
@@ -184,7 +184,7 @@ export function ChefBot() {
     }
   }, [isOpen, isPremium]);
 
-  const sendMessage = useCallback((text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
@@ -195,21 +195,47 @@ export function ChefBot() {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    let history: ChatMessage[] = [];
+    setMessages((prev) => {
+      history = [...prev, userMsg];
+      return history;
+    });
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const responseText = getChefBotResponse(trimmed);
-      const botMsg: ChatMessage = {
-        id: `bot-${Date.now()}`,
-        role: "bot",
-        content: responseText,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botMsg]);
+    try {
+      const apiMessages = history
+        .filter((m) => m.id !== "welcome")
+        .map((m) => ({
+          role: m.role === "bot" ? ("assistant" as const) : ("user" as const),
+          content: m.content,
+        }));
+      const reply = await sendChefBotMessage(apiMessages);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `bot-${Date.now()}`,
+          role: "bot",
+          content: reply,
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (err) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `bot-${Date.now()}`,
+          role: "bot",
+          content:
+            err instanceof Error && err.message
+              ? err.message
+              : "Hubo un problema al contactar a ChefBot. Intenta de nuevo.",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 600);
+    }
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
