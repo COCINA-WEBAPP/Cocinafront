@@ -82,20 +82,24 @@ export function RecipeCard({ recipe, onFavoriteChange }: RecipeCardProps) {
         <Heart className={`h-5 w-5 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600 dark:text-gray-300"}`} />
       </button>
 
-      <div className="relative h-48 w-full overflow-hidden bg-muted">
+      <Link
+        href={`/recetas/${recipe.id}`}
+        className="relative block h-48 w-full overflow-hidden bg-muted"
+        aria-label={t("viewRecipe")}
+      >
         <ImageWithFallback
           src={recipe.images[0]}
           alt={recipe.title}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
         />
         <div
-          className="absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 opacity-100 md:opacity-0 md:group-hover:opacity-100"
+          className="absolute inset-0 hidden md:flex items-center justify-center bg-black/40 transition-opacity duration-200 opacity-0 group-hover:opacity-100 pointer-events-none"
         >
-          <Button asChild variant="secondary">
-            <Link href={`/recetas/${recipe.id}`}>{t("viewRecipe")}</Link>
-          </Button>
+          <span className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow">
+            {t("viewRecipe")}
+          </span>
         </div>
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col p-4">
         <div className="mb-2">
