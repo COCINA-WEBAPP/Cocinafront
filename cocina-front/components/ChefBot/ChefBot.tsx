@@ -195,11 +195,8 @@ export function ChefBot() {
       timestamp: new Date(),
     };
 
-    let history: ChatMessage[] = [];
-    setMessages((prev) => {
-      history = [...prev, userMsg];
-      return history;
-    });
+    const history = [...messages, userMsg];
+    setMessages(history);
     setInput("");
     setIsTyping(true);
 
@@ -236,7 +233,7 @@ export function ChefBot() {
     } finally {
       setIsTyping(false);
     }
-  }, []);
+  }, [messages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
