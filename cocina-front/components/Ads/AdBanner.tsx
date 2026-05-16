@@ -45,7 +45,7 @@ export function AdBanner() {
 
   return (
     <div
-      className={`fixed z-40 transition-all duration-300 bottom-6 max-md:bottom-[5.5rem] right-[5.5rem] md:right-[5.5rem] w-[min(20rem,calc(100vw-6.5rem))] ${
+      className={`fixed z-40 transition-all duration-300 bottom-6 max-md:bottom-[5.5rem] left-4 md:left-6 right-[5.5rem] ${
         fadeIn ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
       }`}
       role="complementary"
