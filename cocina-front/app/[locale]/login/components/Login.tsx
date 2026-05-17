@@ -42,11 +42,6 @@ export function LoginForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const fillExample = () => {
-    // Credenciales del usuario seed del back (ver CocinaBack/src/seed/seed.data.ts).
-    setFormData({ email: "maria@cocina.com", password: "password123" });
-  };
-
   const inputCls =
     "w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-300 disabled:opacity-50 transition bg-white";
 
@@ -78,14 +73,7 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="flex items-center justify-between text-sm">
-        <button
-          type="button"
-          onClick={fillExample}
-          className="text-[#f97316] hover:underline font-medium text-xs"
-        >
-          {t("useExample")}
-        </button>
+      <div className="flex items-center justify-end text-sm">
         <a href="#" className="text-gray-400 hover:text-gray-600 text-xs">
           {t("forgotPassword")}
         </a>
@@ -103,10 +91,6 @@ export function LoginForm() {
         )}
       </button>
 
-      <div className="text-xs text-gray-400 text-center pt-1 space-y-0.5">
-        <p>{t("testUsers")}</p>
-        <p>{t("testEmails")}</p>
-      </div>
     </form>
   );
 }

@@ -35,9 +35,14 @@ export default function ShoppingListPage() {
   const refreshState = useCallback(async () => {
     try {
       const current = await getShoppingList();
-      setState({ ...current, entries: [...current.entries], ownedItems: [...current.ownedItems] });
+      setState({
+        ...current,
+        entries: [...current.entries],
+        ownedItems: [...current.ownedItems],
+        consolidated: current.consolidated ? [...current.consolidated] : [],
+      });
     } catch {
-      setState({ entries: [], ownedItems: [] });
+      setState({ entries: [], ownedItems: [], consolidated: [] });
     }
   }, []);
 
@@ -74,13 +79,48 @@ export default function ShoppingListPage() {
     return state.ownedItems.filter((item) => allNormalized.has(item)).length;
   }, [state]);
 
-  const groupedFinalList = useMemo(() => groupIngredientsByCategory(finalList), [finalList]);
+  const localGrouped = useMemo(() => groupIngredientsByCategory(finalList), [finalList]);
+
+  /**
+   * Si el backend devolvió una versión consolidada por Claude, la usamos
+   * (filtrando los ítems marcados como "ya los tengo"). Si no, caemos al
+   * agrupamiento local por categoría.
+   */
+  const groupedFinalList = useMemo<Array<[string, string[]]>>(() => {
+    if (state.consolidated && state.consolidated.length > 0) {
+      return state.consolidated
+        .map((s) => {
+          const filtered = s.items.filter(
+            (item) => !state.ownedItems.includes(item.toLowerCase().trim()),
+          );
+          return [s.category, filtered] as [string, string[]];
+        })
+        .filter(([, items]) => items.length > 0);
+    }
+    return Array.from(localGrouped.entries());
+  }, [state.consolidated, state.ownedItems, localGrouped]);
+
+  const isAiOrganized = (state.consolidated?.length ?? 0) > 0;
 
   const tCat = useTranslations("IngredientCategories");
 
   const CATEGORY_ICONS: Record<string, React.ElementType> = {
+    // Claves locales (en inglés)
     dairy: Milk, meat: Beef, seafood: Fish, vegetables: Carrot, fruits: Apple,
     grains: Wheat, spices: Flame, oils: Droplets, eggs: Egg, bakery: CakeSlice, other: Package,
+    // Claves devueltas por Claude (en español)
+    "vegetales": Carrot,
+    "frutas": Apple,
+    "carnes y pescados": Beef,
+    "lácteos y huevos": Milk,
+    "granos, cereales y panes": Wheat,
+    "especias y condimentos": Flame,
+    "otros": Package,
+  };
+
+  const renderCategoryLabel = (category: string): string => {
+    if (isAiOrganized) return category;
+    try { return renderCategoryLabel(category); } catch { return category; }
   };
 
   const handleRemoveRecipe = async (recipeId: string) => {
@@ -96,7 +136,7 @@ export default function ShoppingListPage() {
   const handleClearAll = async () => {
     try {
       await clearShoppingList();
-      setState({ entries: [], ownedItems: [] });
+      setState({ entries: [], ownedItems: [], consolidated: [] });
       setIsClearDialogOpen(false);
       toast.success(t("listCleared"));
     } catch {
@@ -114,7 +154,7 @@ export default function ShoppingListPage() {
   const handleCopy = () => {
     const sections: string[] = [];
     for (const [category, items] of groupedFinalList) {
-      sections.push(`\n${tCat(category).toUpperCase()}\n${items.map((item) => `  • ${item}`).join("\n")}`);
+      sections.push(`\n${renderCategoryLabel(category).toUpperCase()}\n${items.map((item) => `  • ${item}`).join("\n")}`);
     }
     navigator.clipboard.writeText(`${t("finalList")}\n${sections.join("\n")}`);
     toast.success(t("copied"));
@@ -126,7 +166,7 @@ export default function ShoppingListPage() {
       const itemsHtml = items.map((item) => `<li style="padding:4px 0;">&#9744; ${item}</li>`).join("");
       sections.push(`
         <div style="margin-bottom:1.5rem;">
-          <h2 style="font-size:1.1rem;font-weight:600;border-bottom:2px solid #e5e5e5;padding-bottom:4px;margin-bottom:8px;">${tCat(category)}</h2>
+          <h2 style="font-size:1.1rem;font-weight:600;border-bottom:2px solid #e5e5e5;padding-bottom:4px;margin-bottom:8px;">${renderCategoryLabel(category)}</h2>
           <ul style="list-style:none;padding:0;margin:0;">${itemsHtml}</ul>
         </div>
       `);
@@ -263,24 +303,24 @@ export default function ShoppingListPage() {
               <p className="text-sm text-muted-foreground">{t("allOwned")}</p>
             ) : (
               <div className="space-y-6">
-                {Array.from(groupedFinalList).map(([category, items]) => {
-                  const Icon = CATEGORY_ICONS[category] || Package;
+                {groupedFinalList.map(([category, items], idx) => {
+                  const Icon = CATEGORY_ICONS[category.toLowerCase()] || Package;
                   return (
                     <div key={category}>
                       <div className="flex items-center gap-2 mb-3">
                         <Icon className="h-5 w-5 text-primary" />
-                        <h3 className="font-semibold text-sm uppercase tracking-wide">{tCat(category)}</h3>
+                        <h3 className="font-semibold text-sm uppercase tracking-wide">{renderCategoryLabel(category)}</h3>
                         <Badge variant="outline" className="text-xs">{items.length}</Badge>
                       </div>
                       <ul className="space-y-1.5 ml-7">
-                        {items.map((ingredient, idx) => (
-                          <li key={idx} className="flex items-start gap-3">
+                        {items.map((ingredient, i) => (
+                          <li key={i} className="flex items-start gap-3">
                             <span className="mt-1.5 h-2 w-2 rounded-full bg-primary flex-shrink-0" />
                             <span>{ingredient}</span>
                           </li>
                         ))}
                       </ul>
-                      {category !== Array.from(groupedFinalList.keys()).pop() && <Separator className="mt-4" />}
+                      {idx < groupedFinalList.length - 1 && <Separator className="mt-4" />}
                     </div>
                   );
                 })}
