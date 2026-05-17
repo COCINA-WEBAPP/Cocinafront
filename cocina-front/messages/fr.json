@@ -195,6 +195,7 @@
     "tagRemoveError": "Erreur lors de la suppression du tag",
     "shoppingList": "Liste de courses",
     "addedToShoppingList": "Ingrédients ajoutés à la liste de courses",
+    "addToShoppingListError": "Impossible d'ajouter à la liste de courses",
     "alreadyInShoppingList": "Déjà dans la liste",
     "prepare": "Préparer",
     "addToList": "Ajouter à la liste",

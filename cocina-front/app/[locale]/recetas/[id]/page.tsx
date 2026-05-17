@@ -126,11 +126,11 @@ export default function RecipePage() {
   const handleAddToShoppingList = async () => {
     if (!recipe) return;
     try {
-      await addRecipeToShoppingList(recipeId, recipe.title, recipe.ingredients);
+      await addRecipeToShoppingList(recipeId);
       setInShoppingList(true);
       toast.success(t("addedToShoppingList"));
     } catch {
-      toast.error(t("addedToShoppingList"));
+      toast.error(t("addToShoppingListError"));
     }
   };
 

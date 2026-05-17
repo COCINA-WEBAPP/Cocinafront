@@ -195,6 +195,7 @@
     "tagRemoveError": "Error removing tag",
     "shoppingList": "Shopping list",
     "addedToShoppingList": "Ingredients added to shopping list",
+    "addToShoppingListError": "Could not add to shopping list",
     "alreadyInShoppingList": "Already in list",
     "prepare": "Prepare",
     "addToList": "Add to list",

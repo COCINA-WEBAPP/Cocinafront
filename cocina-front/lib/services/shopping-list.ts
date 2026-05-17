@@ -39,17 +39,17 @@ export async function getShoppingList(): Promise<ShoppingListState> {
 
 /**
  * Agrega los ingredientes de una receta a la lista.
- * Si la receta ya existe, reemplaza sus ingredientes.
+ * El backend lee el título e ingredientes desde la receta en BD, así que
+ * solo se envía recipeId. Los otros params se mantienen para compatibilidad
+ * con llamadores existentes pero se ignoran.
  */
 export async function addRecipeToShoppingList(
   recipeId: string,
-  recipeTitle: string,
-  ingredients: string[]
+  _recipeTitle?: string,
+  _ingredients?: string[]
 ): Promise<void> {
   const state = await api.post<ShoppingListState>("/shopping-list/recipes", {
     recipeId,
-    recipeTitle,
-    ingredients,
   });
   updateCache(state);
 }
