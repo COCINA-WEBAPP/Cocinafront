@@ -1,13 +1,22 @@
 "use client"
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { getCurrentUser } from "@/lib/services/user";
 
 export function CTASection() {
   const t = useTranslations('CTA');
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    setIsAuthenticated(Boolean(getCurrentUser()));
+  }, []);
+
+  if (isAuthenticated !== false) return null;
 
   return (
     <section className="py-20 bg-white">
