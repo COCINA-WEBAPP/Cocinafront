@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { getCurrentUser, logout, refreshCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, logout, refreshCurrentUser, subscribeAuthChanges } from "@/lib/services/user";
 import type { User as AppUser } from "@/lib/types/users";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { PremiumBadge } from "./PremiumBadge";
@@ -36,6 +36,10 @@ export function Header({ onMenuToggle }: HeaderProps) {
         if (fresh) setCurrentUser(fresh);
       })
       .catch(() => undefined);
+    const unsubscribe = subscribeAuthChanges(() => {
+      setCurrentUser(getCurrentUser());
+    });
+    return unsubscribe;
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {

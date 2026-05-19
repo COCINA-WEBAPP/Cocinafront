@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { MessageCircle, X, Send, ChefHat, Bot, Crown, Lock } from "lucide-react";
 import { sendChefBotMessage } from "@/lib/services/chefbot";
-import { getCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, subscribeAuthChanges } from "@/lib/services/user";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import type { User } from "@/lib/types/users";
 
@@ -173,7 +173,19 @@ export function ChefBot() {
 
   useEffect(() => {
     setCurrentUser(getCurrentUser());
-  }, []);
+    const unsubscribe = subscribeAuthChanges(() => {
+      setCurrentUser(getCurrentUser());
+      // Resetear el chat al cambiar de sesión (logout/login)
+      setIsOpen(false);
+      setMessages([{
+        id: "welcome",
+        role: "bot",
+        content: t("welcomeMessage"),
+        timestamp: new Date(),
+      }]);
+    });
+    return unsubscribe;
+  }, [t]);
 
   const isPremium = Boolean(currentUser?.isPremium);
 

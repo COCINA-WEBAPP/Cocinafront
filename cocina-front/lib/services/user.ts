@@ -26,6 +26,13 @@ const USER_CACHE_KEY = "auth_user";
 /** Caché de todos los usuarios cargados (para recipe-user y seguidores) */
 export let allUsersCache: User[] = [];
 
+/**
+ * Evento custom que se dispara cada vez que cambia el usuario en sesión
+ * (login, logout, register, refresh). Los componentes pueden suscribirse
+ * con `subscribeAuthChanges` para reaccionar a cambios sin recargar.
+ */
+const AUTH_CHANGE_EVENT = "cocina:auth-changed";
+
 function cacheUser(user: User | null): void {
   currentUser = user;
   if (typeof window === "undefined") return;
@@ -35,6 +42,27 @@ function cacheUser(user: User | null): void {
     localStorage.removeItem(USER_CACHE_KEY);
     api.setToken(null);
   }
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+}
+
+/**
+ * Suscribe un handler a cambios de sesión (login, logout, refresh) y a
+ * cambios cross-tab vía `storage`. Devuelve la función de unsubscribe.
+ */
+export function subscribeAuthChanges(handler: () => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const storageHandler = (e: StorageEvent) => {
+    if (e.key === USER_CACHE_KEY || e.key === null) {
+      currentUser = null; // forzar relectura desde localStorage
+      handler();
+    }
+  };
+  window.addEventListener(AUTH_CHANGE_EVENT, handler);
+  window.addEventListener("storage", storageHandler);
+  return () => {
+    window.removeEventListener(AUTH_CHANGE_EVENT, handler);
+    window.removeEventListener("storage", storageHandler);
+  };
 }
 
 /** Mapea la respuesta de la API al tipo User del frontend */

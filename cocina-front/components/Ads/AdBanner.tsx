@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { X, ExternalLink } from "lucide-react";
 import { SPONSORS, getRandomSponsor, type Sponsor } from "./adsData";
-import { getCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, subscribeAuthChanges } from "@/lib/services/user";
 import { useRouter } from "@/i18n/navigation";
 
 const BANNER_DISMISSED_KEY = "ad_banner_dismissed_until";
@@ -17,22 +17,42 @@ export function AdBanner() {
   const router = useRouter();
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user?.isPremium) return;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
-    const dismissedUntil = sessionStorage.getItem(BANNER_DISMISSED_KEY);
-    if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
+    const apply = () => {
+      const user = getCurrentUser();
+      if (user?.isPremium) {
+        // Si pasa a premium en vivo, ocultar el anuncio
+        if (interval) { clearInterval(interval); interval = undefined; }
+        setVisible(false);
+        setFadeIn(false);
+        setSponsor(null);
+        return;
+      }
 
-    const initial = getRandomSponsor();
-    setSponsor(initial);
-    setVisible(true);
-    setTimeout(() => setFadeIn(true), 50);
+      const dismissedUntil = sessionStorage.getItem(BANNER_DISMISSED_KEY);
+      if (dismissedUntil && Date.now() < Number(dismissedUntil)) return;
 
-    const interval = setInterval(() => {
-      setSponsor((prev) => getRandomSponsor(prev?.id));
-    }, ROTATE_INTERVAL_MS);
+      // Ya hay un anuncio rotando — no reiniciar
+      if (interval) return;
 
-    return () => clearInterval(interval);
+      const initial = getRandomSponsor();
+      setSponsor(initial);
+      setVisible(true);
+      setTimeout(() => setFadeIn(true), 50);
+
+      interval = setInterval(() => {
+        setSponsor((prev) => getRandomSponsor(prev?.id));
+      }, ROTATE_INTERVAL_MS);
+    };
+
+    apply();
+    const unsubscribe = subscribeAuthChanges(apply);
+
+    return () => {
+      if (interval) clearInterval(interval);
+      unsubscribe();
+    };
   }, []);
 
   const dismiss = useCallback(() => {

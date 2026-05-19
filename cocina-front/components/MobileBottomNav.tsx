@@ -22,7 +22,7 @@ import { Home, Search, User, Globe, PlusCircle, ShoppingCart } from "lucide-reac
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { useEffect, useState } from "react";
-import { getCurrentUser, refreshCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, refreshCurrentUser, subscribeAuthChanges } from "@/lib/services/user";
 import type { User as AppUser } from "@/lib/types/users";
 import { routing } from "@/i18n/routing";
 import {
@@ -74,6 +74,10 @@ export function MobileBottomNav() {
         if (fresh) setCurrentUser(fresh);
       })
       .catch(() => undefined);
+    const unsubscribe = subscribeAuthChanges(() => {
+      setCurrentUser(getCurrentUser());
+    });
+    return unsubscribe;
   }, []);
 
   return (

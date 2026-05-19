@@ -5,7 +5,7 @@ import { Sparkles } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { getCurrentUser } from "@/lib/services/user";
+import { getCurrentUser, subscribeAuthChanges } from "@/lib/services/user";
 
 export function CTASection() {
   const t = useTranslations('CTA');
@@ -14,6 +14,10 @@ export function CTASection() {
 
   useEffect(() => {
     setIsAuthenticated(Boolean(getCurrentUser()));
+    const unsubscribe = subscribeAuthChanges(() => {
+      setIsAuthenticated(Boolean(getCurrentUser()));
+    });
+    return unsubscribe;
   }, []);
 
   if (isAuthenticated !== false) return null;
